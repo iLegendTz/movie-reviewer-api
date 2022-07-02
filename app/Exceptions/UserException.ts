@@ -47,7 +47,6 @@ export default class UserException extends Exception {
             .send({ message: 'Ya existe un registro con este username' })
         }
 
-
       default:
         return ctx.response.status(500).send({ message: 'Error al momento de completar el registro' })
     }
