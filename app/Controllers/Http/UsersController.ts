@@ -6,6 +6,7 @@ import jwt from 'jsonwebtoken'
 
 import User from 'App/Models/User'
 import UserException from '../../Exceptions/UserException';
+import Token from '../../Models/Token';
 
 export default class UsersController {
   public async index({ }: HttpContextContract) {
@@ -24,19 +25,18 @@ export default class UsersController {
     const trx = await Database.transaction();
 
     try {
-      const newUserId = await trx.insertQuery()
-        .table('tbl_users')
-        .insert({ username: username, email: email, password: password });
+      const user = new User();
+      user.username = username;
+      user.email = email;
+      user.password = password;
+      user.useTransaction(trx);
+      await user.save();
 
-      const token = jwt.sign({ email }, Env.get('APP_KEY'), { expiresIn: '2h' })
-
-      if (!token) {
-        throw new UserException("No token")
-      }
-
-      await trx.insertQuery()
-        .table('tbl_tokens')
-        .insert({ token: token, user_id: newUserId })
+      const token = new Token();
+      token.token = jwt.sign({ email }, Env.get('APP_KEY'), { expiresIn: '2h' });
+      token.user_id = user.id;
+      token.useTransaction(trx);
+      await token.save();
 
       await Mail.send((message) => {
         message
@@ -46,11 +46,10 @@ export default class UsersController {
           .htmlView('emails/welcome', { username: username, url: `${Env.get('SITE_URL')}/token=${token}` })
       })
 
-      await trx.commit()
+      await trx.commit();
 
       return response.status(200).send({ message: "Registro completado con exito, se te ha enviado un correo con las instrucciones para activar tu cuenta" })
     } catch (error) {
-      console.log(error)
       await trx.rollback()
       throw new UserException(error.message, 422, error.code)
     }
