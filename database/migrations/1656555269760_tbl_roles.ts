@@ -17,7 +17,7 @@ export default class extends BaseSchema {
       table.timestamp('updated_at', { useTz: true })
     })
 
-    const roles = Role.createMany([{ name: 'owner' }, { name: 'moderator' }, { name: 'member' }])
+    Role.createMany([{ name: 'owner' }, { name: 'moderator' }, { name: 'member' }])
   }
 
   public async down() {
