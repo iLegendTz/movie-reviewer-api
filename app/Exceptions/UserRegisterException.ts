@@ -1,6 +1,7 @@
 import { Exception } from '@adonisjs/core/build/standalone'
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
-import User from '../Models/User';
+
+import User from 'App/Models/User';
 
 /*
 |--------------------------------------------------------------------------
@@ -11,10 +12,10 @@ import User from '../Models/User';
 | a status code and error code for every exception.
 |
 | @example
-| new UserException('message', 500, 'E_RUNTIME_EXCEPTION')
+| new UserRegisterException('message', 500, 'E_RUNTIME_EXCEPTION')
 |
 */
-export default class UserException extends Exception {
+export default class UserRegisterException extends Exception {
   /**
    * The handle method allows you to self handle the exception and
    * return an HTTP response.
@@ -28,7 +29,6 @@ export default class UserException extends Exception {
    *
    */
   public async handle(error: this, ctx: HttpContextContract) {
-
     const body = ctx.request.body();
 
     switch (error.code) {
