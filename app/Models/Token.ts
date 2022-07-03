@@ -9,6 +9,9 @@ export default class Token extends BaseModel {
   public token: string
 
   @column()
+  public token_type_id: number
+
+  @column()
   public user_id: number
 
   @column.dateTime({ autoCreate: true })
