@@ -1,12 +1,14 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Database from '@ioc:Adonis/Lucid/Database';
 import Mail from '@ioc:Adonis/Addons/Mail';
+
 import Env from '@ioc:Adonis/Core/Env';
 import jwt from 'jsonwebtoken'
 
 import User from 'App/Models/User'
-import UserException from '../../Exceptions/UserException';
 import Token from '../../Models/Token';
+import UserRegisterException from 'App/Exceptions/UserRegisterException';
+import UserActivateException from '../../Exceptions/UserActivateException';
 
 export default class UsersController {
   public async index({ }: HttpContextContract) {
@@ -33,7 +35,8 @@ export default class UsersController {
       await user.save();
 
       const token = new Token();
-      token.token = jwt.sign({ email }, Env.get('APP_KEY'), { expiresIn: '2h' });
+      token.token = jwt.sign({ email: email }, Env.get('APP_KEY'), { expiresIn: '2h' });
+      token.token_type_id = 1;
       token.user_id = user.id;
       token.useTransaction(trx);
       await token.save();
@@ -43,15 +46,17 @@ export default class UsersController {
           .from('no-reply@moviereviewer')
           .to(email)
           .subject('Welcome to Movie Reviewer')
-          .htmlView('emails/welcome', { username: username, url: `${Env.get('SITE_URL')}/token=${token}` })
+          .htmlView('emails/welcome', { username: username, url: `${Env.get('SITE_URL')}/users/activate-user?token=${token.token}` })
       })
 
       await trx.commit();
 
-      return response.status(200).send({ message: "Registro completado con exito, se te ha enviado un correo con las instrucciones para activar tu cuenta" })
+      return response
+        .status(200)
+        .send({ message: "Registro completado con exito, se te ha enviado un correo con las instrucciones para activar tu cuenta" })
     } catch (error) {
       await trx.rollback()
-      throw new UserException(error.message, 422, error.code)
+      throw new UserRegisterException(error.message, 422, error.code)
     }
   }
 
@@ -71,7 +76,38 @@ export default class UsersController {
     /* Delete user */
   }
 
-  public async activeUser({ }: HttpContextContract) {
-    /* Active user */
-  }
+  public async activateUser({ request, response }: HttpContextContract) {
+    /* activate user */
+    const { token } = request.qs();
+
+    const trx = await Database.transaction();
+
+    try {
+      jwt.verify(token, Env.get('APP_KEY'));
+      const tokenDB = await Token.findByOrFail('token', token)
+      tokenDB.useTransaction(trx)
+      await tokenDB.delete()
+
+      const userDB = await User.findByOrFail('id', tokenDB.user_id)
+      userDB.activated = true
+      userDB.useTransaction(trx)
+      await userDB.save()
+
+      await Token.query()
+        .where('user_id', userDB.id)
+        .where('token_type_id', 1)
+        .useTransaction(trx)
+        .delete()
+
+      trx.commit()
+
+      return response
+        .status(200)
+        .send({ message: "Cuenta activada con exito" })
+    }
+    catch (error) {
+      await trx.rollback()
+      throw new UserActivateException(error.message)
+    }
+  };
 }
