@@ -19,7 +19,7 @@ export default class User extends BaseModel {
   public roleId: number
 
   @column()
-  public active: boolean
+  public activated: boolean
 
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime

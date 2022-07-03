@@ -12,7 +12,7 @@ export default class extends BaseSchema {
       table.string('email', 254).notNullable().unique()
       table.string('password', 254).notNullable()
       table.integer('role_id').unsigned().references('id').inTable('tbl_roles').defaultTo(3)
-      table.boolean('active').notNullable().defaultTo(false)
+      table.boolean('activated').notNullable().defaultTo(false)
 
       /**
        * Uses timestamptz for PostgreSQL and DATETIME2 for MSSQL
@@ -21,7 +21,7 @@ export default class extends BaseSchema {
       table.timestamp('updated_at', { useTz: true })
     })
 
-    User.create({ username: 'owner', password: '123', email: 'imtzahumandev@gmail.com', roleId: 1, active: true })
+    User.create({ username: 'owner', password: '123', email: 'imtzahumandev@gmail.com', roleId: 1, activated: true })
   }
 
   public async down() {
