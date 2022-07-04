@@ -105,6 +105,7 @@ export default class UsersController {
       trx.commit();
       return response.status(200).send({ token: jwt.sign({ email: user.email }, Env.get('APP_KEY')) });
     } catch (error) {
+      trx.rollback();
       throw new UserLoginException(error.message, 422, error.code);
     }
   }
