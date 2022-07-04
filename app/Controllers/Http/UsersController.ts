@@ -7,8 +7,10 @@ import jwt from 'jsonwebtoken'
 
 import User from 'App/Models/User'
 import Token from '../../Models/Token';
+
 import UserRegisterException from 'App/Exceptions/UserRegisterException';
 import UserActivateException from '../../Exceptions/UserActivateException';
+import UserResendActivationEmailException from '../../Exceptions/UserResendActivationEmailException';
 
 export default class UsersController {
   public async index({ }: HttpContextContract) {
@@ -110,4 +112,40 @@ export default class UsersController {
       throw new UserActivateException(error.message)
     }
   };
+
+  public async resendActivationEmail({ response, request }: HttpContextContract) {
+    const { email } = request.body()
+
+    const user = await User.findByOrFail('email', email)
+
+    if (user.activated) {
+      throw new UserResendActivationEmailException("El usuario ya esta activado", 500, "ER_REGISTRY_ACTIVATED")
+    }
+
+    const trx = await Database.transaction();
+
+    try {
+      const token = new Token();
+      token.token = jwt.sign({ email: email }, Env.get('APP_KEY'), { expiresIn: '2h' });
+      token.token_type_id = 1;
+      token.user_id = user.id;
+      token.useTransaction(trx);
+      await token.save();
+
+      await Mail.send((message) => {
+        message
+          .from('no-reply@moviereviewer')
+          .to(email)
+          .subject('Welcome to Movie Reviewer')
+          .htmlView('emails/welcome', { username: user.username, url: `${Env.get('SITE_URL')}/users/activate-user?token=${token.token}` })
+      })
+
+      await trx.commit()
+
+      return response.status(200).send({ message: "Se te ha enviado email con las instrucciones para activar tu cuenta" })
+    } catch (error) {
+      await trx.rollback()
+      throw new UserResendActivationEmailException(error.message)
+    }
+  }
 }
