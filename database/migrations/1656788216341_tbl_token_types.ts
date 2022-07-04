@@ -1,4 +1,5 @@
 import BaseSchema from '@ioc:Adonis/Lucid/Schema'
+
 import TokenType from '../../app/Models/TokenType';
 
 export default class extends BaseSchema {
