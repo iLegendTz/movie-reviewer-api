@@ -27,6 +27,7 @@ Route.get('/', async () => {
 Route.group(() => {
   Route.get('/', 'UsersController.index')
   Route.post('/', 'UsersController.store')
+  Route.post('/login', 'UsersController.login')
   Route.get('/activate-user', 'UsersController.activateUser')
   Route.post('/resend-activation-email', 'UsersController.resendActivationEmail')
   Route.get('/:id', 'UsersController.show')

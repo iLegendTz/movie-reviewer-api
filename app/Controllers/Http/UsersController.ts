@@ -1,6 +1,7 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Database from '@ioc:Adonis/Lucid/Database';
 import Mail from '@ioc:Adonis/Addons/Mail';
+import Hash from '@ioc:Adonis/Core/Hash';
 
 import Env from '@ioc:Adonis/Core/Env';
 import jwt from 'jsonwebtoken'
@@ -11,6 +12,7 @@ import Token from '../../Models/Token';
 import UserRegisterException from 'App/Exceptions/UserRegisterException';
 import UserActivateException from '../../Exceptions/UserActivateException';
 import UserResendActivationEmailException from '../../Exceptions/UserResendActivationEmailException';
+import UserLoginException from '../../Exceptions/UserLoginException';
 
 export default class UsersController {
   public async index({ }: HttpContextContract) {
@@ -76,6 +78,35 @@ export default class UsersController {
 
   public async destroy({ }: HttpContextContract) {
     /* Delete user */
+  }
+
+  public async login({ request, response }: HttpContextContract) {
+    const { email, password } = request.body();
+
+    const trx = await Database.transaction();
+
+    try {
+      const user = await User.findByOrFail('email', email);
+
+      if (!user.activated) {
+        throw new UserLoginException("Account not activated", 403, "ER_NOT_ACTIVATED");
+      }
+
+      if (!await Hash.verify(user.password, password)) {
+        throw new UserLoginException("Credenciales incorrectas", 422, "ER_PASSWORD_NOT_MATCH");
+      }
+
+      const token = jwt.sign({ email: user.email }, Env.get('APP_KEY'));
+
+      const tokenDB = await Token.create({ token: token, token_type_id: 2, user_id: user.id })
+      tokenDB.useTransaction(trx);
+      tokenDB.save();
+
+      trx.commit();
+      return response.status(200).send({ token: jwt.sign({ email: user.email }, Env.get('APP_KEY')) });
+    } catch (error) {
+      throw new UserLoginException(error.message, 422, error.code);
+    }
   }
 
   public async activateUser({ request, response }: HttpContextContract) {
