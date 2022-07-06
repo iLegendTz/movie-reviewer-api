@@ -32,7 +32,7 @@ export default class UserLoginException extends Exception {
         return ctx.response.status(error.status || 500).send({ message: "Tu cuenta aun no esta activada, activala para poder iniciar sesion", code: error.code })
 
       default:
-        return ctx.response.status(error.status || 500).send({ message: "Credenciales incorrectas", code: "WRONG_CREDENTIALS" })
+        return ctx.response.status(error.status || 500).send({ message: "Credenciales incorrectas", code: "ER_WRONG_CREDENTIALS" })
     }
   }
 }

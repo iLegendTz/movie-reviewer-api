@@ -27,6 +27,6 @@ export default class UserActivateException extends Exception {
    *
    */
   public async handle(error: this, ctx: HttpContextContract) {
-    return ctx.response.status(error.status || 500).send({ message: 'El link ha expirado o es invalido', code: "INVALID_LINK" })
+    return ctx.response.status(error.status || 500).send({ message: 'El link ha expirado o es invalido', code: "ER_INVALID_LINK" })
   }
 }
