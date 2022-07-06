@@ -34,21 +34,21 @@ export default class UserRegisterException extends Exception {
     switch (error.code) {
       case "ER_NO_DEFAULT_FOR_FIELD":
         return ctx.response.status(error.status || 500)
-          .send({ message: 'Uno o mas campos son invalidos' })
+          .send({ message: 'Uno o mas campos son invalidos', code: error.code })
 
       case "ER_DUP_ENTRY":
         let emailExists = await User.findBy('email', body.email)
 
         if (emailExists) {
           return ctx.response.status(error.status || 500)
-            .send({ message: 'Ya existe un registro con este email' })
+            .send({ message: 'Ya existe un registro con este email', code: error.code })
         } else {
           return ctx.response.status(error.status || 500)
-            .send({ message: 'Ya existe un registro con este username' })
+            .send({ message: 'Ya existe un registro con este username', code: error.code })
         }
 
       default:
-        return ctx.response.status(500).send({ message: 'Error al momento de completar el registro' })
+        return ctx.response.status(500).send({ message: 'Error al momento de completar el registro', code: "ER_REGISTER_FAILED" })
     }
   }
 }

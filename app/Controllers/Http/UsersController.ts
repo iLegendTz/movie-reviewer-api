@@ -57,7 +57,7 @@ export default class UsersController {
 
       return response
         .status(200)
-        .send({ message: "Registro completado con exito, se te ha enviado un correo con las instrucciones para activar tu cuenta" })
+        .send({ message: "Registro completado con exito, se te ha enviado un correo con las instrucciones para activar tu cuenta", code: "SUCCESS LOGIN" })
     } catch (error) {
       await trx.rollback()
       throw new UserRegisterException(error.message, 422, error.code)
@@ -103,7 +103,7 @@ export default class UsersController {
       tokenDB.save();
 
       trx.commit();
-      return response.status(200).send({ token: jwt.sign({ email: user.email }, Env.get('APP_KEY')) });
+      return response.status(200).send({ token: jwt.sign({ email: user.email }, Env.get('APP_KEY')), code: "SUCCESS_LOGIN" });
     } catch (error) {
       trx.rollback();
       throw new UserLoginException(error.message, 422, error.code);
@@ -137,7 +137,7 @@ export default class UsersController {
 
       return response
         .status(200)
-        .send({ message: "Cuenta activada con exito" })
+        .send({ message: "Cuenta activada con exito", code: "SUCCESS_ACTIVATED" })
     }
     catch (error) {
       await trx.rollback()
@@ -174,7 +174,7 @@ export default class UsersController {
 
       await trx.commit()
 
-      return response.status(200).send({ message: "Se te ha enviado email con las instrucciones para activar tu cuenta" })
+      return response.status(200).send({ message: "Se te ha enviado email con las instrucciones para activar tu cuenta", code: "SUCCESS_MAIL_SEND" })
     } catch (error) {
       await trx.rollback()
       throw new UserResendActivationEmailException(error.message)

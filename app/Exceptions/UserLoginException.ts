@@ -29,10 +29,10 @@ export default class UserLoginException extends Exception {
   public async handle(error: this, ctx: HttpContextContract) {
     switch (error.code) {
       case "ER_NOT_ACTIVATED":
-        return ctx.response.status(error.status || 500).send({ message: "Tu cuenta aun no esta activada, activala para poder iniciar sesion" })
+        return ctx.response.status(error.status || 500).send({ message: "Tu cuenta aun no esta activada, activala para poder iniciar sesion", code: error.code })
 
       default:
-        return ctx.response.status(error.status || 500).send({ message: "Credenciales incorrectas" })
+        return ctx.response.status(error.status || 500).send({ message: "Credenciales incorrectas", code: "WRONG_CREDENTIALS" })
     }
   }
 }
