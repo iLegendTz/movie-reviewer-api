@@ -88,12 +88,12 @@ export default class UsersController {
     try {
       const user = await User.findByOrFail('email', email);
 
-      if (!user.activated) {
-        throw new UserLoginException("Account not activated", 403, "ER_NOT_ACTIVATED");
-      }
-
       if (!await Hash.verify(user.password, password)) {
         throw new UserLoginException("Credenciales incorrectas", 422, "ER_PASSWORD_NOT_MATCH");
+      }
+
+      if (!user.activated) {
+        throw new UserLoginException("Account not activated", 403, "ER_NOT_ACTIVATED");
       }
 
       const token = jwt.sign({ email: user.email }, Env.get('APP_KEY'));
