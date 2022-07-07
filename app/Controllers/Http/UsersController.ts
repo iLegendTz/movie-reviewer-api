@@ -14,6 +14,8 @@ import UserActivateException from '../../Exceptions/UserActivateException';
 import UserResendActivationEmailException from '../../Exceptions/UserResendActivationEmailException';
 import UserLoginException from '../../Exceptions/UserLoginException';
 
+import { verifyRegisterInputs } from '../../helpers/VerifyRegisterInputs';
+
 export default class UsersController {
   public async index({ }: HttpContextContract) {
     /* List all users */
@@ -27,6 +29,11 @@ export default class UsersController {
   public async store({ request, response }: HttpContextContract) {
     /* Handle user creation form request */
     const { username, email, password } = request.body();
+
+    const validInputs = verifyRegisterInputs({ username: username, email: email, password: password })
+    if (validInputs) {
+      throw validInputs
+    }
 
     const trx = await Database.transaction();
 
