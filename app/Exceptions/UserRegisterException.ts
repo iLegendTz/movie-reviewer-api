@@ -47,6 +47,18 @@ export default class UserRegisterException extends Exception {
             .send({ message: 'Ya existe un registro con este username', code: error.code })
         }
 
+      case "ER_USERNAME_NO_VALID":
+        return ctx.response.status(error.status || 500)
+          .send({ message: "Introduce un username valido.\nTu username solo puede contener letras, numeros y guiones.\nCon un minimo de 6 caracteres.\nCon un maximo de 32 caracteres.", code: error.code })
+
+      case "ER_EMAIL_NO_VALID":
+        return ctx.response.status(error.status || 500)
+          .send({ message: "Direccion de email invalido, introduce un email valido", code: error.code })
+
+      case "ER_PASSWORD_NO_VALID":
+        return ctx.response.status(error.status || 500)
+          .send({ message: "Password no valido\nTu password debe contener al menos 6 caracteres", code: error.code })
+
       default:
         return ctx.response.status(500).send({ message: 'Error al momento de completar el registro', code: "ER_REGISTER_FAILED" })
     }
