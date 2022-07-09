@@ -57,7 +57,7 @@ export default class UsersController {
           .from('no-reply@moviereviewer')
           .to(email)
           .subject('Welcome to Movie Reviewer')
-          .htmlView('emails/welcome', { username: username, url: `${Env.get('SITE_URL')}/users/activate-user?token=${token.token}` })
+          .htmlView('emails/welcome', { username: username, url: `${Env.get('SITE_URL')}/activate-account?token=${token.token}` })
       })
 
       await trx.commit();
@@ -176,7 +176,7 @@ export default class UsersController {
           .from('no-reply@moviereviewer')
           .to(email)
           .subject('Welcome to Movie Reviewer')
-          .htmlView('emails/welcome', { username: user.username, url: `${Env.get('SITE_URL')}/users/activate-user?token=${token.token}` })
+          .htmlView('emails/welcome', { username: user.username, url: `${Env.get('SITE_URL')}/activate-account?token=${token.token}` })
       })
 
       await trx.commit()
