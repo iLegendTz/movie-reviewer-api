@@ -27,15 +27,18 @@ export default class UserResendActivationEmailException extends Exception {
    *
    */
   public async handle(error: this, ctx: HttpContextContract) {
-    switch (error.code) {
-      case "E_ROW_NOT_FOUND":
-        return ctx.response.status(error.status || 500).send({ messsage: "No existe ningun usuario con ese email", code: error.code })
 
-      case "ER_REGISTRY_ACTIVATED":
-        return ctx.response.status(error.status || 500).send({ message: "El usuario ya esta activado", code: error.code })
+    return ctx.response.status(error.status || 500).send({ message: "No se pudo enviar el email", code: "ER_EMAIL_NOT_SEND" })
 
-      default:
-        return ctx.response.status(error.status || 500).send({ message: "No se pudo reenviar el email", code: "ER_EMAIL_NOT_SEND" })
-    }
+    // switch (error.code) {
+    //   case "E_ROW_NOT_FOUND":
+    //     return ctx.response.status(error.status || 500).send({ messsage: "No existe ningun usuario con ese email", code: error.code })
+
+    //   case "ER_REGISTRY_ACTIVATED":
+    //     return ctx.response.status(error.status || 500).send({ message: "El usuario ya esta activado", code: error.code })
+
+    //   default:
+    //     return ctx.response.status(error.status || 500).send({ message: "No se pudo reenviar el email", code: "ER_EMAIL_NOT_SEND" })
+    // }
   }
 }
